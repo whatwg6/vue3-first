@@ -122,9 +122,10 @@ onBeforeRouteLeave(() => {
       </div>
       <p v-if="message" class="form-message" role="status">{{ message }}</p>
     </form>
-    <RouterLink class="text-link" to="/about"
-      >前往 About <span aria-hidden="true">→</span></RouterLink
-    >
+    <RouterLink class="text-link" to="/about">
+      前往 About
+      <span aria-hidden="true">→</span>
+    </RouterLink>
   </section>
 </template>
 
@@ -136,6 +137,7 @@ onBeforeRouteLeave(() => {
   border-radius: 12px;
   background: #f7faf8;
 }
+
 .form-heading,
 .form-actions {
   display: flex;
@@ -143,14 +145,17 @@ onBeforeRouteLeave(() => {
   flex-wrap: wrap;
   gap: 12px;
 }
+
 .form-heading {
   justify-content: space-between;
 }
+
 .form-heading h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
 }
+
 .draft-status,
 .form-hint,
 .character-count,
@@ -159,22 +164,27 @@ onBeforeRouteLeave(() => {
   font-size: 13px;
   line-height: 1.8;
 }
+
 .draft-status.unsaved {
   color: #976314;
 }
+
 .form-hint {
   margin: 10px 0 22px;
 }
+
 .form-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-bottom: 20px;
 }
+
 .form-field label {
   font-size: 14px;
   font-weight: 600;
 }
+
 .form-field input,
 .form-field select,
 .form-field textarea {
@@ -188,9 +198,11 @@ onBeforeRouteLeave(() => {
   font: inherit;
   font-size: 14px;
 }
+
 .form-field textarea {
   resize: vertical;
 }
+
 .form-field input:focus-visible,
 .form-field select:focus-visible,
 .form-field textarea:focus-visible,
@@ -198,9 +210,11 @@ onBeforeRouteLeave(() => {
   outline: 2px solid #247e5f;
   outline-offset: 3px;
 }
+
 .character-count {
   align-self: flex-end;
 }
+
 .reset-button {
   padding: 10px 18px;
   border: 1px solid #ceddd3;
@@ -210,13 +224,16 @@ onBeforeRouteLeave(() => {
   cursor: pointer;
   font-size: 14px;
 }
+
 .form-actions button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
 .form-message {
   margin: 16px 0 0;
 }
+
 @media (max-width: 600px) {
   .feedback-form {
     padding: 18px;

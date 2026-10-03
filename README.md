@@ -29,6 +29,19 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 pnpm install
 ```
 
+### Format on commit
+
+`pnpm install` automatically installs the Husky Git hooks. Each commit uses
+lint-staged to format staged files with the project's Prettier configuration and
+include the formatting changes in the commit. Unstaged changes are preserved.
+Files unsupported by Prettier are skipped, and formatting errors block the commit.
+
+To format all source files manually:
+
+```sh
+pnpm format
+```
+
 ### Compile and Hot-Reload for Development
 
 ```sh

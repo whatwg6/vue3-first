@@ -18,7 +18,10 @@ async function toggleLogin() {
 <template>
   <div class="app-shell">
     <header class="site-header">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">V</span> Vue Demo</div>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">V</span>
+        Vue Demo
+      </div>
       <div class="header-actions">
         <span class="login-status" role="status">
           <span class="status-dot" :class="{ online: isLoggedIn }" aria-hidden="true"></span>
