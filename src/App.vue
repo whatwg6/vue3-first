@@ -1,13 +1,13 @@
 <script setup>
 import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { isLoggedIn, login, logout } from './stores/auth.js'
+import { isLoggedIn, login } from './stores/auth.js'
+import { logoutAndNavigate } from './router/index.js'
 
 const router = useRouter()
 
 async function toggleLogin() {
   if (isLoggedIn.value) {
-    logout()
-    await router.replace({ name: 'login' })
+    await logoutAndNavigate()
   } else {
     login()
     await router.replace({ name: 'home' })
