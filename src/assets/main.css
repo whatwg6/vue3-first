@@ -1,35 +1,199 @@
 @import './base.css';
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 80px;
+  padding: 16px clamp(20px, 5vw, 72px);
+  background: #fff;
+  border-bottom: 1px solid #e3eae6;
 }
-
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
+.brand,
+.header-actions,
+.login-status {
+  display: flex;
+  align-items: center;
 }
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+.brand {
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #e3f3eb;
+  color: #218460;
+  font-size: 22px;
+}
+.header-actions {
+  gap: 20px;
+}
+.login-status {
+  gap: 7px;
+  color: #687c74;
+  font-size: 13px;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a9b4af;
+}
+.status-dot.online {
+  background: #259b70;
+}
+.auth-button {
+  padding: 10px 22px;
+  border: 0;
+  border-radius: 9px;
+  background: #247e5f;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 150ms;
+}
+.auth-button:hover {
+  background: #1b674d;
+}
+.page-container {
+  width: min(100% - 40px, 880px);
+  margin: 48px auto 0;
+}
+.navigation {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.navigation a {
+  padding: 10px 22px;
+  border-radius: 8px;
+  color: #697d74;
+  font-size: 14px;
+  font-weight: 600;
+}
+.navigation a:hover {
+  background: #edf2ef;
+}
+.navigation a.router-link-exact-active {
+  color: #217353;
+  background: #e3f0e9;
+}
+.content-card {
+  min-height: 400px;
+  padding: 48px;
+  border: 1px solid #e2eae5;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 32px #243d3605;
+}
+.eyebrow {
+  color: #328363;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+h1 {
+  margin: 16px 0 12px;
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 650;
+  letter-spacing: -0.5px;
+}
+.description,
+.info-panel p {
+  color: #687c74;
+  font-size: 15px;
+  line-height: 1.85;
+}
+.description {
+  margin: 0;
+}
+.info-panel {
+  margin: 30px 0;
+  padding: 22px 24px;
+  border: 1px solid #e7eee9;
+  border-radius: 12px;
+  background: #f7faf8;
+}
+.info-panel h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.info-panel p {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+.text-link {
+  color: #217353;
+  font-size: 14px;
+  font-weight: 600;
+}
+.text-link span {
+  margin-left: 6px;
+}
+.text-link:hover {
+  text-decoration: underline;
+}
+.login-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.lock-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+  border-radius: 20px;
+  background: #eaf5ee;
+  color: #338264;
+}
+.lock-icon svg {
+  width: 30px;
+  height: 30px;
+}
+.login-hint {
+  margin: 28px 0 0;
+  color: #7a8982;
+  font-size: 13px;
+  line-height: 1.8;
+}
+footer {
+  padding: 28px 0;
+  color: #89978f;
+  font-size: 12px;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .site-header {
+    min-height: 72px;
   }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
+  .brand {
+    font-size: 16px;
   }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+  .header-actions {
+    gap: 10px;
+  }
+  .auth-button {
+    padding: 10px 14px;
+  }
+  .page-container {
+    margin-top: 28px;
+  }
+  .content-card {
+    padding: 32px 24px;
+  }
+  .info-panel {
+    padding: 18px;
   }
 }
