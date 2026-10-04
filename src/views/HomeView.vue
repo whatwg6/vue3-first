@@ -8,10 +8,33 @@ const feedbackTypes = [
   { value: 'bug', label: '问题反馈' },
   { value: 'other', label: '其他' },
 ]
+const priorities = [
+  { value: 'low', label: '不着急' },
+  { value: 'normal', label: '一般' },
+  { value: 'high', label: '比较紧急' },
+]
+const feedbackAreas = [
+  { value: 'navigation', label: '页面导航' },
+  { value: 'forms', label: '表单操作' },
+  { value: 'account', label: '登录与账号' },
+  { value: 'performance', label: '加载速度' },
+]
+const devices = [
+  { value: 'desktop', label: '电脑' },
+  { value: 'mobile', label: '手机' },
+  { value: 'tablet', label: '平板' },
+]
 const message = ref('')
 
 function loadFeedback() {
-  const emptyFeedback = { title: '', category: 'suggestion', content: '' }
+  const emptyFeedback = {
+    title: '',
+    category: 'suggestion',
+    priority: 'normal',
+    areas: [],
+    device: 'desktop',
+    content: '',
+  }
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
@@ -26,17 +49,43 @@ function loadFeedback() {
       throw new Error('Invalid feedback')
     }
 
-    return { title: feedback.title, category: feedback.category, content: feedback.content }
+    return {
+      title: feedback.title,
+      category: feedback.category,
+      priority: priorities.some((option) => option.value === feedback.priority)
+        ? feedback.priority
+        : emptyFeedback.priority,
+      areas: Array.isArray(feedback.areas)
+        ? feedbackAreas
+            .filter((option) => feedback.areas.includes(option.value))
+            .map((option) => option.value)
+        : [],
+      device: devices.some((option) => option.value === feedback.device)
+        ? feedback.device
+        : emptyFeedback.device,
+      content: feedback.content,
+    }
   } catch {
     message.value = '无法读取已保存的反馈，你仍然可以填写新的内容。'
     return emptyFeedback
   }
 }
 
+function copyFeedback(feedback) {
+  return { ...feedback, areas: [...feedback.areas] }
+}
+
 const savedFeedback = ref(loadFeedback())
-const form = reactive({ ...savedFeedback.value })
+const form = reactive(copyFeedback(savedFeedback.value))
 const isDirty = computed(() =>
-  Object.keys(form).some((key) => form[key] !== savedFeedback.value[key]),
+  Object.keys(form).some((key) => {
+    const value = form[key]
+    const savedValue = savedFeedback.value[key]
+    if (Array.isArray(value)) {
+      return value.length !== savedValue.length || value.some((item) => !savedValue.includes(item))
+    }
+    return value !== savedValue
+  }),
 )
 
 watch(form, () => (message.value = ''), { flush: 'sync' })
@@ -49,7 +98,7 @@ function saveFeedback() {
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(form))
-    savedFeedback.value = { ...form }
+    savedFeedback.value = copyFeedback(form)
     message.value = '反馈已保存到此浏览器，可以放心切换页面。'
   } catch {
     message.value = '保存失败，请稍后重试。当前内容仍未保存。'
@@ -57,7 +106,7 @@ function saveFeedback() {
 }
 
 function resetFeedback() {
-  Object.assign(form, savedFeedback.value)
+  Object.assign(form, copyFeedback(savedFeedback.value))
   message.value = '已恢复到最近一次保存的内容。'
 }
 
@@ -101,6 +150,37 @@ onBeforeRouteLeave(() => {
           </option>
         </select>
       </div>
+      <div class="form-field">
+        <label for="feedback-device">使用设备</label>
+        <select id="feedback-device" v-model="form.device">
+          <option v-for="device in devices" :key="device.value" :value="device.value">
+            {{ device.label }}
+          </option>
+        </select>
+      </div>
+      <fieldset class="form-field choice-field">
+        <legend>紧急程度（单选）</legend>
+        <div class="choice-options">
+          <label v-for="priority in priorities" :key="priority.value" class="choice-option">
+            <input
+              v-model="form.priority"
+              type="radio"
+              name="feedback-priority"
+              :value="priority.value"
+            />
+            {{ priority.label }}
+          </label>
+        </div>
+      </fieldset>
+      <fieldset class="form-field choice-field">
+        <legend>涉及方面（可多选）</legend>
+        <div class="choice-options">
+          <label v-for="area in feedbackAreas" :key="area.value" class="choice-option">
+            <input v-model="form.areas" type="checkbox" name="feedback-areas" :value="area.value" />
+            {{ area.label }}
+          </label>
+        </div>
+      </fieldset>
       <div class="form-field">
         <label for="feedback-content">详细内容</label>
         <textarea
@@ -180,12 +260,13 @@ onBeforeRouteLeave(() => {
   margin-bottom: 20px;
 }
 
-.form-field label {
+.form-field label,
+.choice-field legend {
   font-size: 14px;
   font-weight: 600;
 }
 
-.form-field input,
+.form-field input[type='text'],
 .form-field select,
 .form-field textarea {
   width: 100%;
@@ -201,6 +282,47 @@ onBeforeRouteLeave(() => {
 
 .form-field textarea {
   resize: vertical;
+}
+
+.choice-field {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice-field legend {
+  margin-bottom: 10px;
+  padding: 0;
+}
+
+.choice-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.choice-options .choice-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #ceddd3;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.choice-option:has(input:checked) {
+  border-color: #247e5f;
+  background: #e3f0e9;
+}
+
+.choice-option input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #247e5f;
 }
 
 .form-field input:focus-visible,
