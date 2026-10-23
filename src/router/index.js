@@ -19,6 +19,14 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/todos',
+      name: 'todos',
+      component: () => import('../views/TodosView.vue'),
+      meta: {
+        requiresAuth: true,
+      },
+    },
     { path: '/login', name: 'login', component: LoginView },
     { path: '/:pathMatch(.*)*', redirect: { name: 'home' } },
   ],

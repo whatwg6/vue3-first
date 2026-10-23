@@ -37,6 +37,7 @@ async function toggleLogin() {
       <nav v-if="isLoggedIn" class="navigation" aria-label="页面导航">
         <RouterLink to="/home">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/todos">Todos</RouterLink>
       </nav>
       <main>
         <RouterView />
