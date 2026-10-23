@@ -20,6 +20,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/todos2',
+      name: 'todos2',
+      component: () => import('../views/TodoView2.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/todos',
       name: 'todos',
       component: () => import('../views/TodosView.vue'),

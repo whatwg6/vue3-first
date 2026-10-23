@@ -38,6 +38,7 @@ async function toggleLogin() {
         <RouterLink to="/home">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
         <RouterLink to="/todos">Todos</RouterLink>
+        <RouterLink to="/todos2">Todos 2</RouterLink>
       </nav>
       <main>
         <RouterView />
