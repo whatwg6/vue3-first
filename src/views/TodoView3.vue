@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue'
-import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
+import { useMutation, useQuery } from '@pinia/colada'
 
 interface Task {
   id: number
@@ -11,7 +11,6 @@ interface Task {
 }
 
 const todo = shallowRef('')
-const queryCache = useQueryCache()
 const tasksKey = ['tasks'] as const
 
 // fetch 对 HTTP 4xx/5xx 不会自动抛错，需要交给 Query / Mutation 处理。
@@ -51,11 +50,9 @@ const {
     })
     return response.json()
   },
-  onSuccess(task) {
-    // 取消旧查询，防止旧响应覆盖本次写入；接口按 id 倒序排列。
-    queryCache.cancelQueries({ key: tasksKey })
-    queryCache.setQueryData<Task[]>(tasksKey, (old = []) => [task, ...old])
+  onSuccess() {
     todo.value = ''
+    return refetch()
   },
 })
 
@@ -73,12 +70,8 @@ const {
     })
     return response.json()
   },
-  onSuccess(task) {
-    queryCache.cancelQueries({ key: tasksKey })
-    // 使用服务端返回的 completed_at 等完整字段。
-    queryCache.setQueryData<Task[]>(tasksKey, (old = []) =>
-      old.map((item) => (item.id === task.id ? task : item)),
-    )
+  onSuccess() {
+    return refetch()
   },
 })
 
@@ -92,9 +85,8 @@ const {
     // DELETE 返回 204，没有 JSON 正文。
     await request(`/api/tasks/${id}`, { method: 'DELETE' })
   },
-  onSuccess(_data, id) {
-    queryCache.cancelQueries({ key: tasksKey })
-    queryCache.setQueryData<Task[]>(tasksKey, (old = []) => old.filter((item) => item.id !== id))
+  onSuccess() {
+    return refetch()
   },
 })
 
