@@ -41,7 +41,11 @@ async function toggleLogin() {
         <RouterLink to="/todos2">Todos 2</RouterLink>
       </nav>
       <main>
-        <RouterView />
+        <RouterView v-slot="{ Component }">
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
+        </RouterView>
       </main>
       <footer>Vue 3 + Vue Router · 模拟登录演示</footer>
     </div>
