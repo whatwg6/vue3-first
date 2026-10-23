@@ -39,6 +39,7 @@ async function toggleLogin() {
         <RouterLink to="/about">About</RouterLink>
         <RouterLink to="/todos">Todos</RouterLink>
         <RouterLink to="/todos2">Todos 2</RouterLink>
+        <RouterLink to="/todos3">Todos 3</RouterLink>
       </nav>
       <main>
         <RouterView v-slot="{ Component }">

@@ -1,0 +1,182 @@
+<script setup lang="ts">
+import { computed, shallowRef } from 'vue'
+import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
+
+interface Task {
+  id: number
+  title: string
+  completed: boolean
+  created_at: string
+  completed_at: string | null
+}
+
+const todo = shallowRef('')
+const queryCache = useQueryCache()
+const tasksKey = ['tasks'] as const
+
+// fetch 对 HTTP 4xx/5xx 不会自动抛错，需要交给 Query / Mutation 处理。
+async function request(url: string, options?: RequestInit): Promise<Response> {
+  const response = await fetch(url, options)
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { error?: string } | null
+    throw new Error(body?.error ?? `请求失败（${response.status}）`)
+  }
+  return response
+}
+
+// Colada 使用 key / query；data 直接读取查询缓存，不再复制到本地 ref。
+const {
+  data: tasks,
+  isLoading: isFetching,
+  error,
+  refetch,
+} = useQuery({
+  key: tasksKey,
+  query: async ({ signal }): Promise<Task[]> => {
+    const response = await request('/api/tasks', { signal })
+    return response.json()
+  },
+})
+
+const {
+  mutate: addTask,
+  isLoading: isAdding,
+  error: addError,
+} = useMutation({
+  mutation: async (title: string): Promise<Task> => {
+    const response = await request('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    })
+    return response.json()
+  },
+  onSuccess(task) {
+    // 取消旧查询，防止旧响应覆盖本次写入；接口按 id 倒序排列。
+    queryCache.cancelQueries({ key: tasksKey })
+    queryCache.setQueryData<Task[]>(tasksKey, (old = []) => [task, ...old])
+    todo.value = ''
+  },
+})
+
+const {
+  mutate: completeTask,
+  isLoading: isCompleting,
+  variables: completingId,
+  error: completeError,
+} = useMutation({
+  mutation: async (id: number): Promise<Task> => {
+    const response = await request(`/api/tasks/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ completed: true }),
+    })
+    return response.json()
+  },
+  onSuccess(task) {
+    queryCache.cancelQueries({ key: tasksKey })
+    // 使用服务端返回的 completed_at 等完整字段。
+    queryCache.setQueryData<Task[]>(tasksKey, (old = []) =>
+      old.map((item) => (item.id === task.id ? task : item)),
+    )
+  },
+})
+
+const {
+  mutate: deleteTask,
+  isLoading: isDeleting,
+  variables: deletingId,
+  error: deleteError,
+} = useMutation({
+  mutation: async (id: number): Promise<void> => {
+    // DELETE 返回 204，没有 JSON 正文。
+    await request(`/api/tasks/${id}`, { method: 'DELETE' })
+  },
+  onSuccess(_data, id) {
+    queryCache.cancelQueries({ key: tasksKey })
+    queryCache.setQueryData<Task[]>(tasksKey, (old = []) => old.filter((item) => item.id !== id))
+  },
+})
+
+const isSaving = computed(() => isAdding.value || isCompleting.value || isDeleting.value)
+const cannotAdd = computed(() => !todo.value.trim() || isSaving.value || !tasks.value)
+
+function submit() {
+  if (cannotAdd.value) return
+  addTask(todo.value.trim())
+}
+</script>
+
+<template>
+  <section class="space-y-3" aria-label="Pinia Colada 任务列表">
+    <h1>Todos 3 · Pinia Colada</h1>
+    <div class="flex items-center gap-3">
+      <button
+        type="button"
+        class="border px-2 cursor-pointer disabled:cursor-default disabled:opacity-50"
+        :disabled="isFetching || isSaving"
+        @click="refetch()"
+      >
+        刷新
+      </button>
+      <span v-if="isFetching" role="status">{{ tasks ? '后台刷新中…' : '加载中…' }}</span>
+    </div>
+    <p v-if="error" role="alert" class="text-red-600">
+      {{ tasks ? '刷新失败，当前仍显示已有任务' : '加载失败' }}：{{
+        error.message
+      }}，请点击刷新重试。
+    </p>
+
+    <!-- 只按是否已有数据决定渲染，后台刷新不会卸载表单和列表。 -->
+    <div v-if="tasks" class="space-y-3">
+      <form class="flex flex-wrap gap-2" @submit.prevent="submit">
+        <input
+          v-model="todo"
+          aria-label="新任务"
+          placeholder="请输入"
+          class="border px-2"
+          :disabled="isAdding"
+        />
+        <button
+          type="submit"
+          class="cursor-pointer disabled:cursor-default disabled:text-gray-400"
+          :disabled="cannotAdd"
+        >
+          {{ isAdding ? '新增中…' : '新增' }}
+        </button>
+      </form>
+      <p v-if="addError" role="alert" class="text-red-600">新增失败：{{ addError.message }}</p>
+      <p v-if="completeError" role="alert" class="text-red-600">
+        完成失败：{{ completeError.message }}
+      </p>
+      <p v-if="deleteError" role="alert" class="text-red-600">
+        删除失败：{{ deleteError.message }}
+      </p>
+      <p v-if="tasks.length === 0">暂无任务，添加第一条吧。</p>
+      <ul v-else class="space-y-2">
+        <li v-for="task in tasks" :key="task.id" class="flex flex-wrap items-center gap-2">
+          <span :aria-label="task.completed ? '已完成' : '未完成'">
+            {{ task.completed ? '✅' : '❎' }}
+          </span>
+          <span :class="{ 'line-through': task.completed }">{{ task.title }}</span>
+          <button
+            type="button"
+            class="border px-2 cursor-pointer disabled:cursor-default disabled:opacity-50"
+            :disabled="task.completed || isSaving"
+            @click="completeTask(task.id)"
+          >
+            {{ isCompleting && completingId === task.id ? '完成中…' : '完成' }}
+          </button>
+          <button
+            type="button"
+            class="border px-2 cursor-pointer disabled:cursor-default disabled:opacity-50"
+            :disabled="isSaving"
+            @click="deleteTask(task.id)"
+          >
+            {{ isDeleting && deletingId === task.id ? '删除中…' : '删除' }}
+          </button>
+        </li>
+      </ul>
+    </div>
+  </section>
+</template>
