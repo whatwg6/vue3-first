@@ -2,6 +2,8 @@
 import { computed, shallowRef } from 'vue'
 import { useMutation, useQuery } from '@pinia/colada'
 
+import TodoItem from '@/components/TodoItem.vue'
+
 interface Task {
   id: number
   title: string
@@ -147,26 +149,19 @@ function submit() {
       <p v-if="tasks.length === 0">暂无任务，添加第一条吧。</p>
       <ul v-else class="space-y-2">
         <li v-for="task in tasks" :key="task.id" class="flex flex-wrap items-center gap-2">
-          <span :aria-label="task.completed ? '已完成' : '未完成'">
-            {{ task.completed ? '✅' : '❎' }}
-          </span>
-          <span :class="{ 'line-through': task.completed }">{{ task.title }}</span>
-          <button
-            type="button"
-            class="border px-2 cursor-pointer disabled:cursor-default disabled:opacity-50"
-            :disabled="task.completed || isSaving"
-            @click="completeTask(task.id)"
-          >
-            {{ isCompleting && completingId === task.id ? '完成中…' : '完成' }}
-          </button>
-          <button
-            type="button"
-            class="border px-2 cursor-pointer disabled:cursor-default disabled:opacity-50"
-            :disabled="isSaving"
-            @click="deleteTask(task.id)"
-          >
-            {{ isDeleting && deletingId === task.id ? '删除中…' : '删除' }}
-          </button>
+          <TodoItem
+            :key="task.id"
+            :id="task.id"
+            :title="task.title"
+            :completed="task.completed"
+            :isSaving="isSaving"
+            :isCompleting="isCompleting"
+            :isDeleting="isDeleting"
+            :completingId="completingId"
+            :deletingId="deletingId"
+            @complete="completeTask"
+            @delete="deleteTask"
+          />
         </li>
       </ul>
     </div>
